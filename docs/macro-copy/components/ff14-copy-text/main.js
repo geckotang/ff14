@@ -35,13 +35,32 @@ customElements.define('ff14-copy-text',
     }
 
     _onButtonClick() {
-      this.inputText.select();
-      const success = document.execCommand('copy');
+      const success = this._execCopy(this.inputText.value);
       if (success) {
         this._highlighted(this.inputText);
         this.copyButton.focus();
         this.dispatchEvent(new CustomEvent('copied'))
       }
+    }
+
+    _execCopy(text) {
+      // テキストをコピーするための要素を作成
+      const root = this.shadowRoot;
+      const pre = document.createElement('pre');
+      pre.textContent = text;
+      pre.style.position = 'absolute';
+      pre.style.top = '100%';
+      pre.style.opacity = '0';
+      root.append(pre);
+      // 生成した要素のテキストを選択する
+      const range = new Range();
+      range.selectNode(pre);
+      const selection = window.getSelection();
+      selection.removeAllRanges();
+      selection.addRange(range);
+      const res = document.execCommand('copy');
+      pre.remove();
+      return res;
     }
 
     _highlighted(el) {
